@@ -36,7 +36,7 @@ export default function Home() {
   );
   const metric = useMemo(() => (toMm ? null : parseMm(input)), [toMm, input]);
   const tape = useMemo(
-    () => (metric !== null ? mmToTape(metric) : null),
+    () => (metric !== null ? mmToTape(metric, 8) : null),
     [metric]
   );
   const feet = useMemo(
@@ -132,7 +132,7 @@ export default function Home() {
           {!toMm && tape
             ? Math.abs(tape.deltaMm) < 0.005
               ? "exact"
-              : `nearest 1/16 · mark = ${formatMm(tape.markMm)}mm`
+              : `nearest 1/8 · mark = ${formatMm(tape.markMm)}mm`
             : " "}
         </div>
       </div>
