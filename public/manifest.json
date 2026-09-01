@@ -4,7 +4,7 @@
   "description": "Convert tape measure readings to millimeters, instantly.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f0a1f",
+  "background_color": "#faf9ff",
   "theme_color": "#7c3aed",
   "orientation": "portrait",
   "icons": [
