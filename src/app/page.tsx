@@ -77,9 +77,14 @@ export default function Home() {
   return (
     <div className="flex min-h-dvh flex-col bg-background px-3 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.5rem,env(safe-area-inset-bottom))]">
       <header className="mb-2 flex items-center justify-between">
-        <h1 className="text-base font-black tracking-tight text-foreground">
-          Measure
-        </h1>
+        <div>
+          <h1 className="text-base font-black leading-tight tracking-tight text-foreground">
+            Measure
+          </h1>
+          <p className="text-[10px] leading-tight text-foreground/40">
+            Made by Kirk for Triumph
+          </p>
+        </div>
         <div className="flex gap-1 rounded-xl border border-foreground/10 bg-surface p-0.5">
           <button onClick={() => switchMode("toMm")} className={tabClass(toMm)}>
             <span className="px-2">in → mm</span>
@@ -169,10 +174,6 @@ export default function Home() {
           clear
         </button>
       </div>
-
-      <p className="pt-2 text-center text-[10px] text-foreground/30">
-        Written by Kirk for Triumph
-      </p>
     </div>
   );
 }
