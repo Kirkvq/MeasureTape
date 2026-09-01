@@ -134,12 +134,12 @@ export default function Home() {
       </div>
 
       {toMm && (
-        <div className="mb-2 grid grid-cols-5 gap-1.5">
+        <div className="mb-2 grid grid-cols-5 gap-2">
           {FRACTION_CHIPS.map((chip) => (
             <button
               key={chip}
               onClick={() => pressChip(chip)}
-              className="rounded-lg border border-accent/25 bg-surface-2 py-1.5 text-xs font-semibold text-accent transition active:scale-95 active:bg-accent-dark active:text-white"
+              className="rounded-xl border border-accent/25 bg-surface-2 py-3 text-sm font-semibold text-accent transition active:scale-95 active:bg-accent-dark active:text-white"
             >
               {chip}
             </button>
@@ -169,7 +169,7 @@ export default function Home() {
           onClick={() => setInput("")}
           className={`${
             toMm ? "" : "col-span-3"
-          } rounded-xl border border-accent/40 bg-accent-dark/10 py-3 text-base font-bold text-accent transition active:scale-95 active:bg-accent-dark active:text-white`}
+          } rounded-xl border border-accent/40 bg-accent-dark/10 py-4 text-base font-bold text-accent transition active:scale-95 active:bg-accent-dark active:text-white`}
         >
           clear
         </button>
