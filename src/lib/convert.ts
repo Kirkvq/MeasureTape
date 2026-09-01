@@ -136,3 +136,25 @@ export function mmToTape(mm: number, precision = 16): TapeReading {
 export function formatInches(inches: number): string {
   return roundTo(inches, 3).toString();
 }
+
+/**
+ * Splits a tape reading's whole-inch count into feet + remaining inches.
+ * The fraction stays attached to the inches, e.g. 122 1/16" -> 10' 2 1/16".
+ * Pure integer division on `whole` — no new rounding, so it can't drift
+ * from the reading `tape` already reports.
+ */
+export function feetAndInches(tape: TapeReading): string {
+  const feet = Math.floor(tape.whole / 12);
+  const inches = tape.whole % 12;
+
+  const inchPart =
+    tape.numerator === 0
+      ? `${inches}"`
+      : inches === 0
+      ? `${tape.numerator}/${tape.denominator}"`
+      : `${inches} ${tape.numerator}/${tape.denominator}"`;
+
+  if (feet === 0) return inchPart;
+  if (inches === 0 && tape.numerator === 0) return `${feet}'`;
+  return `${feet}' ${inchPart}`;
+}

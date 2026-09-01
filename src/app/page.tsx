@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { formatMm, mmToTape, parseLength, parseMm } from "@/lib/convert";
+import { feetAndInches, formatMm, mmToTape, parseLength, parseMm } from "@/lib/convert";
 
 const FRACTION_CHIPS = [
   "1/16",
@@ -38,6 +38,10 @@ export default function Home() {
   const tape = useMemo(
     () => (metric !== null ? mmToTape(metric) : null),
     [metric]
+  );
+  const feet = useMemo(
+    () => (tape && tape.whole >= 12 ? feetAndInches(tape) : null),
+    [tape]
   );
 
   function switchMode(next: Mode) {
@@ -132,6 +136,17 @@ export default function Home() {
             : " "}
         </div>
       </div>
+
+      {!toMm && feet && (
+        <div className="mb-2 rounded-2xl border border-accent/20 bg-surface-2 px-4 py-2 text-center shadow-sm">
+          <span className="text-xl font-black tabular-nums text-accent">
+            {feet}
+          </span>
+          <span className="pl-1.5 text-[10px] font-medium text-accent/60">
+            ft / in
+          </span>
+        </div>
+      )}
 
       {toMm && (
         <div className="mb-2 grid grid-cols-5 gap-2">
