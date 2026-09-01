@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { formatMm, parseLength } from "@/lib/convert";
+import { formatMm, mmToTape, parseLength, parseMm } from "@/lib/convert";
 
 const FRACTION_CHIPS = [
   "1/16",
@@ -21,18 +21,38 @@ const FRACTION_CHIPS = [
   "15/16",
 ];
 
-const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "/", "0", "⌫"];
+type Mode = "toMm" | "toIn";
 
 export default function Home() {
+  const [mode, setMode] = useState<Mode>("toMm");
   const [input, setInput] = useState("");
 
-  const result = useMemo(() => parseLength(input), [input]);
+  const toMm = mode === "toMm";
+  const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", toMm ? "/" : ".", "0", "⌫"];
+
+  const imperial = useMemo(
+    () => (toMm ? parseLength(input) : null),
+    [toMm, input]
+  );
+  const metric = useMemo(() => (toMm ? null : parseMm(input)), [toMm, input]);
+  const tape = useMemo(
+    () => (metric !== null ? mmToTape(metric) : null),
+    [metric]
+  );
+
+  function switchMode(next: Mode) {
+    if (next === mode) return;
+    setMode(next);
+    setInput("");
+  }
 
   function pressKey(key: string) {
     if (key === "⌫") {
       setInput((prev) => prev.slice(0, -1));
       return;
     }
+    // only one decimal point in mm mode
+    if (key === "." && input.includes(".")) return;
     setInput((prev) => prev + key);
   }
 
@@ -43,78 +63,116 @@ export default function Home() {
   function pressChip(chip: string) {
     setInput((prev) => {
       const trimmed = prev.trimEnd();
-      if (!trimmed) return chip;
-      return `${trimmed} ${chip}`;
+      return trimmed ? `${trimmed} ${chip}` : chip;
     });
   }
 
-  function clearAll() {
-    setInput("");
-  }
+  const tabClass = (active: boolean) =>
+    `flex-1 rounded-lg py-1.5 text-xs font-bold transition ${
+      active
+        ? "bg-accent-dark text-white"
+        : "text-accent/70 active:bg-surface-2"
+    }`;
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background px-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
-      <header className="mb-4 text-center">
-        <h1 className="text-2xl font-black tracking-tight text-foreground">
+    <div className="flex min-h-dvh flex-col bg-background px-3 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <header className="mb-2 flex items-center justify-between">
+        <h1 className="text-base font-black tracking-tight text-foreground">
           Measure
         </h1>
-        <p className="text-xs text-accent">tape reading → mm</p>
+        <div className="flex gap-1 rounded-xl border border-foreground/10 bg-surface p-0.5">
+          <button onClick={() => switchMode("toMm")} className={tabClass(toMm)}>
+            <span className="px-2">in → mm</span>
+          </button>
+          <button onClick={() => switchMode("toIn")} className={tabClass(!toMm)}>
+            <span className="px-2">mm → in</span>
+          </button>
+        </div>
       </header>
 
-      <div className="mb-4 rounded-3xl border border-foreground/10 bg-surface p-5 shadow-lg">
-        <div className="mb-1 flex min-h-[2.25rem] items-center justify-center text-2xl font-medium text-foreground/70">
+      <div className="mb-2 rounded-2xl border border-foreground/10 bg-surface px-4 py-3 shadow-sm">
+        <div className="flex min-h-[1.5rem] items-center justify-center text-base font-medium text-foreground/60">
           {input ? (
             <span>
               {input}
-              <span className="text-foreground/30">″</span>
+              <span className="text-foreground/30">{toMm ? "″" : " mm"}</span>
             </span>
           ) : (
-            <span className="text-foreground/30">e.g. 24 1/8</span>
+            <span className="text-foreground/30">
+              {toMm ? "e.g. 24 1/8" : "e.g. 600"}
+            </span>
           )}
         </div>
-        <div className="flex items-baseline justify-center gap-2 py-2">
-          <span className="text-6xl font-black tabular-nums text-foreground">
-            {result ? formatMm(result.mm) : "—"}
-          </span>
-          <span className="text-2xl font-bold text-accent">mm</span>
+
+        <div className="flex items-baseline justify-center gap-1.5 pt-0.5">
+          {toMm ? (
+            <>
+              <span className="text-5xl font-black tabular-nums leading-none text-foreground">
+                {imperial ? formatMm(imperial.mm) : "—"}
+              </span>
+              <span className="text-lg font-bold text-accent">mm</span>
+            </>
+          ) : (
+            <span className="text-5xl font-black tabular-nums leading-none text-foreground">
+              {tape ? tape.label : "—"}
+            </span>
+          )}
+        </div>
+
+        <div className="pt-1 text-center text-[11px] leading-tight text-foreground/40">
+          {!toMm && tape
+            ? Math.abs(tape.deltaMm) < 0.005
+              ? "exact"
+              : `nearest 1/16 · mark = ${formatMm(tape.markMm)}mm`
+            : " "}
         </div>
       </div>
 
-      <div className="mb-4 grid grid-cols-5 gap-2">
-        {FRACTION_CHIPS.map((chip) => (
-          <button
-            key={chip}
-            onClick={() => pressChip(chip)}
-            className="rounded-xl border border-accent/25 bg-surface-2 py-2.5 text-sm font-semibold text-accent active:scale-95 active:bg-accent-dark active:text-white transition"
-          >
-            {chip}
-          </button>
-        ))}
-      </div>
+      {toMm && (
+        <div className="mb-2 grid grid-cols-5 gap-1.5">
+          {FRACTION_CHIPS.map((chip) => (
+            <button
+              key={chip}
+              onClick={() => pressChip(chip)}
+              className="rounded-lg border border-accent/25 bg-surface-2 py-1.5 text-xs font-semibold text-accent transition active:scale-95 active:bg-accent-dark active:text-white"
+            >
+              {chip}
+            </button>
+          ))}
+        </div>
+      )}
 
-      <div className="mt-auto grid grid-cols-3 gap-2">
-        {KEYS.map((key) => (
+      <div className="mt-auto grid grid-cols-3 gap-1.5">
+        {keys.map((key) => (
           <button
             key={key}
             onClick={() => pressKey(key)}
-            className="rounded-2xl border border-foreground/15 bg-surface py-5 text-2xl font-bold text-foreground active:scale-95 active:bg-surface-2 transition"
+            className="rounded-xl border border-foreground/15 bg-surface py-3 text-xl font-bold text-foreground transition active:scale-95 active:bg-surface-2"
           >
             {key}
           </button>
         ))}
+        {toMm ? (
+          <button
+            onClick={pressSpace}
+            className="col-span-2 rounded-xl border border-foreground/15 bg-surface py-3 text-base font-bold text-foreground transition active:scale-95 active:bg-surface-2"
+          >
+            space
+          </button>
+        ) : null}
         <button
-          onClick={pressSpace}
-          className="col-span-2 rounded-2xl border border-foreground/15 bg-surface py-5 text-lg font-bold text-foreground active:scale-95 active:bg-surface-2 transition"
-        >
-          space
-        </button>
-        <button
-          onClick={clearAll}
-          className="rounded-2xl border border-accent/40 bg-accent-dark/10 py-5 text-lg font-bold text-accent active:scale-95 active:bg-accent-dark active:text-white transition"
+          onClick={() => setInput("")}
+          className={`${
+            toMm ? "" : "col-span-3"
+          } rounded-xl border border-accent/40 bg-accent-dark/10 py-3 text-base font-bold text-accent transition active:scale-95 active:bg-accent-dark active:text-white`}
         >
           clear
         </button>
       </div>
+
+      <p className="pt-2 text-center text-[10px] text-foreground/30">
+        Written by Kirk for Triumph
+      </p>
     </div>
   );
 }

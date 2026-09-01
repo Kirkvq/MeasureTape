@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --no-warnings scripts/test-convert.ts && node --experimental-strip-types --no-warnings scripts/verify-exhaustive.ts"
+    "test": "node --experimental-strip-types --no-warnings scripts/test-convert.ts && node --experimental-strip-types --no-warnings scripts/test-tape.ts && node --experimental-strip-types --no-warnings scripts/verify-exhaustive.ts"
   },
   "dependencies": {
     "next": "16.1.6",

@@ -74,6 +74,65 @@ export function formatMm(mm: number): string {
   return roundTo(mm, 2).toString();
 }
 
+export type TapeReading = {
+  /** Whole inches */
+  whole: number;
+  /** Fraction, already reduced (0/1 when the reading lands on a whole inch) */
+  numerator: number;
+  denominator: number;
+  /** e.g. `24 1/8"` */
+  label: string;
+  /** Exact mm value of the tape mark this rounds to */
+  markMm: number;
+  /** markMm - requested mm; how far the nearest mark sits from the target */
+  deltaMm: number;
+};
+
+function gcd(a: number, b: number): number {
+  return b === 0 ? a : gcd(b, a % b);
+}
+
+/** Strict positive number, for the mm keypad: "600", "600.5", ".5" */
+export function parseMm(input: string): number | null {
+  const raw = input.trim();
+  if (!raw) return null;
+  if (!/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(raw)) return null;
+  const value = parseFloat(raw);
+  return Number.isFinite(value) ? value : null;
+}
+
+/**
+ * Converts mm to the nearest mark on an imperial tape.
+ * `precision` is the divisions per inch (16 = nearest 1/16").
+ */
+export function mmToTape(mm: number, precision = 16): TapeReading {
+  const inches = mm / MM_PER_INCH;
+  // toPrecision guards the same binary-float boundary problem as roundTo
+  const totalDivs = Math.round(Number((inches * precision).toPrecision(15)));
+
+  const whole = Math.floor(totalDivs / precision);
+  const rem = totalDivs % precision;
+
+  let numerator = rem;
+  let denominator = precision;
+  if (rem > 0) {
+    const g = gcd(rem, precision);
+    numerator = rem / g;
+    denominator = precision / g;
+  } else {
+    denominator = 1;
+  }
+
+  const markMm = (totalDivs / precision) * MM_PER_INCH;
+
+  let label: string;
+  if (numerator === 0) label = `${whole}"`;
+  else if (whole === 0) label = `${numerator}/${denominator}"`;
+  else label = `${whole} ${numerator}/${denominator}"`;
+
+  return { whole, numerator, denominator, label, markMm, deltaMm: markMm - mm };
+}
+
 export function formatInches(inches: number): string {
   return roundTo(inches, 3).toString();
 }
