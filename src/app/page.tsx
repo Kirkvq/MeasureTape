@@ -61,7 +61,7 @@ export default function Home() {
         <p className="text-xs text-accent">tape reading → mm</p>
       </header>
 
-      <div className="mb-4 rounded-3xl bg-surface p-5 shadow-lg">
+      <div className="mb-4 rounded-3xl border border-foreground/10 bg-surface p-5 shadow-lg">
         <div className="mb-1 flex min-h-[2.25rem] items-center justify-center text-2xl font-medium text-foreground/70">
           {input ? (
             <span>
@@ -85,7 +85,7 @@ export default function Home() {
           <button
             key={chip}
             onClick={() => pressChip(chip)}
-            className="rounded-xl bg-surface-2 py-2.5 text-sm font-semibold text-accent active:scale-95 active:bg-accent-dark active:text-white transition"
+            className="rounded-xl border border-accent/25 bg-surface-2 py-2.5 text-sm font-semibold text-accent active:scale-95 active:bg-accent-dark active:text-white transition"
           >
             {chip}
           </button>
@@ -97,20 +97,20 @@ export default function Home() {
           <button
             key={key}
             onClick={() => pressKey(key)}
-            className="rounded-2xl bg-surface py-5 text-2xl font-bold text-foreground active:scale-95 active:bg-surface-2 transition"
+            className="rounded-2xl border border-foreground/15 bg-surface py-5 text-2xl font-bold text-foreground active:scale-95 active:bg-surface-2 transition"
           >
             {key}
           </button>
         ))}
         <button
           onClick={pressSpace}
-          className="col-span-2 rounded-2xl bg-surface py-5 text-lg font-bold text-foreground active:scale-95 active:bg-surface-2 transition"
+          className="col-span-2 rounded-2xl border border-foreground/15 bg-surface py-5 text-lg font-bold text-foreground active:scale-95 active:bg-surface-2 transition"
         >
           space
         </button>
         <button
           onClick={clearAll}
-          className="rounded-2xl bg-accent-dark/40 py-5 text-lg font-bold text-accent active:scale-95 active:bg-accent-dark active:text-white transition"
+          className="rounded-2xl border border-accent/40 bg-accent-dark/10 py-5 text-lg font-bold text-accent active:scale-95 active:bg-accent-dark active:text-white transition"
         >
           clear
         </button>
