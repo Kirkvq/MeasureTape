@@ -1,5 +1,9 @@
 const MM_PER_INCH = 25.4;
 
+export function inchesToMm(inches: number): number {
+  return inches * MM_PER_INCH;
+}
+
 export type ParsedLength = {
   inches: number;
   mm: number;

@@ -1,7 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { feetAndInches, formatMm, mmToTape, parseLength, parseMm } from "@/lib/convert";
+import {
+  feetAndInches,
+  formatMm,
+  inchesToMm,
+  mmToTape,
+  parseLength,
+  parseMm,
+} from "@/lib/convert";
 
 const FRACTION_CHIPS = [
   "1/16",
@@ -21,13 +28,27 @@ const FRACTION_CHIPS = [
   "15/16",
 ];
 
-type Mode = "toMm" | "toIn";
+const CONVERSION_TABLE = [
+  { inches: 1.5, label: `1 1/2"` },
+  { inches: 3.5, label: `3 1/2"` },
+  { inches: 120, label: `120"` },
+  { inches: 240, label: `240"` },
+];
+
+const DIMENSION_TABLE: { inches: [number, number]; label: string }[] = [
+  { inches: [3, 3.5], label: `3" x 3 1/2"` },
+  { inches: [3.5, 5.5], label: `3 1/2" x 5 1/2"` },
+  { inches: [5.5, 1.5], label: `5 1/2" x 1 1/2"` },
+];
+
+type Mode = "toMm" | "toIn" | "table";
 
 export default function Home() {
   const [mode, setMode] = useState<Mode>("toMm");
   const [input, setInput] = useState("");
 
   const toMm = mode === "toMm";
+  const isTable = mode === "table";
   const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", toMm ? "/" : ".", "0", "⌫"];
 
   const imperial = useMemo(
@@ -72,7 +93,7 @@ export default function Home() {
   }
 
   const tabClass = (active: boolean) =>
-    `flex-1 rounded-lg py-1.5 text-xs font-bold transition ${
+    `flex-1 rounded-lg py-2.5 text-sm font-bold transition ${
       active
         ? "bg-accent-dark text-white"
         : "text-accent/70 active:bg-surface-2"
@@ -89,16 +110,69 @@ export default function Home() {
             Made by Kirk for Triumph
           </p>
         </div>
-        <div className="flex gap-1 rounded-xl border border-foreground/10 bg-surface p-0.5">
+        <div className="flex items-stretch gap-1 rounded-xl border border-foreground/10 bg-surface p-0.5">
           <button onClick={() => switchMode("toMm")} className={tabClass(toMm)}>
             <span className="px-2">in → mm</span>
           </button>
-          <button onClick={() => switchMode("toIn")} className={tabClass(!toMm)}>
+          <div className="my-1.5 w-px bg-foreground/10" />
+          <button onClick={() => switchMode("toIn")} className={tabClass(mode === "toIn")}>
             <span className="px-2">mm → in</span>
+          </button>
+          <div className="my-1.5 w-px bg-foreground/10" />
+          <button onClick={() => switchMode("table")} className={tabClass(isTable)}>
+            <span className="px-2">Conversions</span>
           </button>
         </div>
       </header>
 
+      {isTable ? (
+        <div className="flex flex-col gap-2">
+          <div className="rounded-2xl border border-foreground/10 bg-surface shadow-sm">
+            <div className="flex items-center justify-between px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-foreground/40">
+              <span>Inches</span>
+              <span>Millimetres</span>
+            </div>
+            {CONVERSION_TABLE.map((row, i) => (
+              <div
+                key={row.label}
+                className={`flex items-center justify-between px-4 py-3 ${
+                  i > 0 ? "border-t border-foreground/10" : ""
+                }`}
+              >
+                <span className="text-lg font-bold tabular-nums text-foreground">
+                  {row.label}
+                </span>
+                <span className="text-lg font-black tabular-nums text-accent">
+                  {formatMm(inchesToMm(row.inches))} mm
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-2xl border border-foreground/10 bg-surface shadow-sm">
+            <div className="flex items-center justify-between px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-foreground/40">
+              <span>Millimetres</span>
+              <span>Dimensions</span>
+            </div>
+            {DIMENSION_TABLE.map((row, i) => (
+              <div
+                key={row.label}
+                className={`flex items-center justify-between px-4 py-3 ${
+                  i > 0 ? "border-t border-foreground/10" : ""
+                }`}
+              >
+                <span className="text-lg font-black tabular-nums text-accent">
+                  {row.inches.map((n) => formatMm(inchesToMm(n))).join(" x ")} mm
+                </span>
+                <span className="text-lg font-bold tabular-nums text-foreground">
+                  {row.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <>
       <div className="mb-2 rounded-2xl border border-foreground/10 bg-surface px-4 py-3 shadow-sm">
         <div className="flex min-h-[1.5rem] items-center justify-center text-base font-medium text-foreground/60">
           {input ? (
@@ -189,6 +263,8 @@ export default function Home() {
           clear
         </button>
       </div>
+        </>
+      )}
     </div>
   );
 }
